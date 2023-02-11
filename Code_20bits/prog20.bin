@@ -1,0 +1,27 @@
+// Sample picoMIPS program which could support affine transformation algorithm
+// n = 8 bits, Isize = 12+n = 20 bits
+// format: 6b opcode, 3b %d, 3b %s, 8b immediate or address
+// x2 = a11*x1 + a12*y1 + b11; y2 = a21*x1 + a22*y1 + b21;
+// BINARY //////////////////////////////////////// ASSEMBLER ///////////////////////
+00000100000000000000    //   ADDI %0, %0, 0;    clear REG 0
+00011100000010000000    //   BAT1 %-, %-, 1;    until Bstus=0 goto next Instruction
+00011100000000000000    //   BAT0 %-, %-, 0;    until Bstus=1 goto next Instruction[REPEAT HERE]
+00011000100000000000    //   ADDF %1, %0, -;    REG 1 <= inport x1
+00011001000000000000    //   ADDF %2, %0, -;    REG 2 <= inport x1
+00011100000010000000    //   BAT1 %-, %-, 1;    until Bstus=0 goto next Instruction
+00011100000000000000    //   BAT0 %-, %-, 0;    until Bstus=1 goto next Instruction
+00011001100000000000    //   ADDF %3, %0, -;    REG 3 <= inport y1
+00011010000000000000    //   ADDF %4, %0, -;    REG 4 <= inport y1
+00011100000010000000    //   BAT1 %-, %-, 1;    until Bstus=0 goto next Instruction
+00010100100101100000    //   MULI %1, %1, 0.75; %1 = %1 * 0.75; // 0.75x1
+00010101001011000000    //   MULI %2, %2, -0.5; %2 = %2 * -0.5; // -0.5x1
+00010101101101000000    //   MULI %3, %3, 0.5;  %3 = %3 * 0.5;  // 0.5y1
+00010110010001100000    //   MULI %4, %4, 0.75; %4 = %4 * 0.75; // 0.75y1
+00000000101100000000    //   ADD  %1, %3, -;    %1 = %1 + %3;   // 0.75x1 + 0.5y1
+00000001010000000000    //   ADD  %2, %4, -;    %2 = %2 + %4;   // -0.5x1 + 0.75y1
+00000100100100010100    //   ADDI %1, %1, 20;   %1 = %1 + 20;   // x2 = 0.75x1 + 0.5y1 + 20
+00100000100000000000    //   SHOW %1, %0, -;    SHOW %1
+00011100000000000000    //   BAT0 %-, %-, 0;    until Bstus=1 goto next Instruction
+00000101001011101100    //   ADDI %2, %2, -20;  %2 = %2 + -20;  // y2 = -0.5x1 + 0.75y1 - 20
+00100001000000000000    //   SHOW %2, %0, -;    SHOW %2
+00011100000010000011    //   BAT1 %-, %-, 3;    until Bstus=0 goto LINE3 Instruction
